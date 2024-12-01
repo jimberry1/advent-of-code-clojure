@@ -4,7 +4,7 @@ A repository to track Clojure submissions for advent of code.
 
 ## Prerequisites
 
-Ensure the environment variable `AOC_SESSION` is set as an environment variable. This can be obtained from authentication on the official [Advent of Code](https://adventofcode.com/) site.
+Ensure the environment variable `AOC_SESSION` is set. The value for this variable can be obtained from authentication on the official [Advent of Code](https://adventofcode.com/) site.
 
 ## Usage
 
