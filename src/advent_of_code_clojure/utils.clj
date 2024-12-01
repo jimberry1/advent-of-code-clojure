@@ -41,3 +41,39 @@
 (defn load-example-input [year day]
   (let [example-filename (->example-filename year day)]
     (read-input-file example-filename)))
+
+;; input transformation
+
+(defn transpose
+  "Tranposes a matrix of values, e.g.
+   [[1 2 3] [4 5 6]] -> [[1 4] [2 5] [3 6]]"
+  [m]
+  (apply mapv vector m))
+
+(defn indexed-grid-coll
+  "Takes an input and returns a collection of values in the form
+     `{:x X :y Y :val val}`, where x and y are co-ordinates and val is the
+     value of the input, optionally transformed by xform if provided."
+  [input & {:keys [xform]}]
+  (flatten (map-indexed (fn [y-index row]
+                          (map-indexed (fn [x-index val]
+                                         {:x x-index :y y-index :val (if xform (xform val) val)})
+                                       row))
+                        input)))
+
+(defn indexed-grid-map
+  "Takes an input and returns a collection hashmap of values in the form
+     `{:Y-1 {:X-1 val}}` where y and x are look up co-ordinates, and val is the
+     value of the input, optionally transformed by xform if provided."
+  [input & {:keys [xform] :as opts}]
+  (let [indexed-values (indexed-grid-coll input opts)]
+    (reduce (fn [acc {:keys [y x val]}]
+              (assoc-in acc [y x] val))
+            {} indexed-values)))
+
+(defn get-indexed-grid-map-val
+  "Given an associative structure of coordinates, returns the value at position Y X, or nil if it is not present"
+  [indexed-map y x]
+  (get-in indexed-map [y x]))
+
+
