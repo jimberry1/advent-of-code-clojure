@@ -26,7 +26,7 @@
   (reduce (fn [acc-map item]
             (merge-with + acc-map {item 1})) {} list))
 
-(defn sum-weighted-vals-transduce [rows]
+(defn sum-weighted-vals [rows]
   (let [extracted-numbers (map row->tuple rows)
         freq (->> extracted-numbers (map second) calc-freq)]
     (transduce (comp
@@ -34,4 +34,4 @@
                 (map #(* (or (get freq %) 0) %)))
                + extracted-numbers)))
 
-(sum-weighted-vals-transduce input)
+(sum-weighted-vals input)
