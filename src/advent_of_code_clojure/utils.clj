@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(defn file-exists? [file-path]
+(defn- file-exists? [file-path]
   (let [file (io/file file-path)]
     (.exists file)))
 
@@ -43,6 +43,21 @@
     (read-input-file example-filename)))
 
 ;; input transformation
+(defn format-input
+  "Transforms a puzzle input into a format preferable for solving.
+   
+   Optional parameters
+   :line-re-split - a regex pattern to split puzzle lines into a collection of values
+   :input-xform   - a fn of form (input) -> val that transforms the puzzle input
+   :line-xform    - a fn of form (row) -> val that transforms the puzzle line
+   :val-xform     - a fn of form (val) -> val that transforms a value"
+  [input & {:keys [line-re-split input-xform line-xform val-xform]
+            :or {line-re-split #"\s+" input-xform identity line-xform identity val-xform identity}}]
+  (let [rows (->> input
+                  (map #(str/split % line-re-split))
+                  (map #(map val-xform %))
+                  (map line-xform))]
+    (input-xform rows)))
 
 (defn transpose
   "Tranposes a matrix of values, e.g.
@@ -76,4 +91,5 @@
   [indexed-map y x]
   (get-in indexed-map [y x]))
 
-
+(defn ->int [val]
+  (Integer. val))
