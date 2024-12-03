@@ -11,12 +11,11 @@
 
 (->> input
      (mapcat #(re-seq #"don't\(\)|do\(\)|mul\((\d+),(\d+)\)" %))
-     (reduce (fn [{:keys [go?] :as acc} match]
-               (let [match-term (first match)]
-                 (cond
-                   (= match-term "don't()") (assoc acc :go? false)
-                   (= match-term "do()") (assoc acc :go? true)
-                   (true? go?) (update acc :total + (->> match rest (map utils/->int) (reduce *)))
-                   :else acc)))
+     (reduce (fn [{:keys [go?] :as acc} [match-term & match-vals]]
+               (cond
+                 (= match-term "don't()") (assoc acc :go? false)
+                 (= match-term "do()") (assoc acc :go? true)
+                 (true? go?) (update acc :total + (->> match-vals (map utils/->int) (reduce *)))
+                 :else acc))
              {:total 0 :go? true})
      :total)
