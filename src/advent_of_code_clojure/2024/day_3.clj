@@ -6,7 +6,7 @@
 
 (->> input
      (mapcat #(re-seq #"mul\((\d+),(\d+)\)" %))
-     (map (fn [match-nums] (->> match-nums rest (map utils/->int) (reduce *))))
+     (map (fn [match] (->> match rest (map utils/->int) (reduce *))))
      (reduce +))
 
 (->> input
