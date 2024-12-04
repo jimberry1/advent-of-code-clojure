@@ -29,9 +29,9 @@
 
 (defn is-A-grid-item-valid? [grid-map grid-item]
   (let [allowed-directions [[:up-right :down-left] [:up-left :down-right]]]
-    (reduce (fn [acc [trans-1 trans-2]]
-              (let [{val-1 :val} (utils/get-value-in-direction grid-map trans-1 grid-item)
-                    {val-2 :val} (utils/get-value-in-direction grid-map trans-2 grid-item)
+    (reduce (fn [acc [direction-1 direction-2]]
+              (let [{val-1 :val} (utils/get-value-in-direction grid-map direction-1 grid-item)
+                    {val-2 :val} (utils/get-value-in-direction grid-map direction-2 grid-item)
                     is-valid? (or (and (= "M" val-1) (= "S" val-2))
                                   (and (= "S" val-1) (= "M" val-2)))]
                 (and acc is-valid?)))
