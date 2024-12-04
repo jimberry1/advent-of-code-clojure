@@ -94,29 +94,29 @@
   [indexed-map y x]
   (get-in indexed-map [y x]))
 
-(def all-translations
-  {:up [-1 0]
-   :down [1 0]
-   :left [0 -1]
-   :right [0 1]
-   :up-l [-1 -1]
-   :up-r [-1 1]
-   :down-l [1 -1]
-   :down-r [1 1]})
+(def all-directions
+  {:up {:y -1 :x 0}
+   :down {:y 1 :x 0}
+   :left {:y 0 :x -1}
+   :right {:y 0 :x 1}
+   :up-left {:y -1 :x -1}
+   :up-right {:y -1 :x  1}
+   :down-left {:y 1 :x -1}
+   :down-right {:y 1 :x 1}})
 
-(defn apply-translation [y x [y-trans x-trans]]
-  [(+ y y-trans) (+ x x-trans)])
+(defn apply-translation [{item-x :x item-y :y :as _grid-item} {translate-x :x translate-y :y :as _translation}]
+  {:y (+ item-y translate-y) :x (+ item-x translate-x)})
 
-(defn apply-translation-get-val [grid-map translation {:keys [y x] :as _grid-item}]
-  (let [translation-coords (get all-translations translation)
-        [next-y next-x] (apply-translation y x translation-coords)]
+(defn get-value-in-direction [grid-map direction grid-item]
+  (let [translation (get all-directions direction)
+        {next-y :y next-x :x} (apply-translation grid-item translation)]
     (get-indexed-grid-map-val grid-map next-y next-x)))
 
 (defn walk-grid [grid-map translation starting-grid-item & {:keys [steps] :or {steps 1}}]
   (let [res (loop [cur-step 0 items (list starting-grid-item)]
               (if (= cur-step steps)
                 items
-                (let [next-item (apply-translation-get-val grid-map translation (first items))]
+                (let [next-item (get-value-in-direction grid-map translation (first items))]
                   (if (nil? next-item)
                     items
                     (recur (inc cur-step) (cons next-item items))))))]
