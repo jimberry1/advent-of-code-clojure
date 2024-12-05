@@ -124,3 +124,10 @@
 
 (defn ->int [val]
   (Integer. val))
+
+(defn drop-nth [n coll]
+  (keep-indexed #(when (not= %1 n) %2) coll))
+
+(defn insert-at-index [n item coll]
+  (let [[start end] (split-at n coll)]
+    (concat start [item] end)))

@@ -32,14 +32,11 @@
      count)
 
 ;; part 2 
-(defn drop-nth [n coll]
-  (keep-indexed #(when (not= %1 n) %2) coll))
-
 (defn is-valid-with-dampening? [row]
   (->> row
        count
        range
-       (map #(drop-nth % row))
+       (map #(utils/drop-nth % row))
        (map is-row-valid?)
        (some #(true? %))))
 
