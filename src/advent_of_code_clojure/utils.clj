@@ -122,6 +122,15 @@
                     (recur (inc cur-step) (cons next-item items))))))]
     (reverse res)))
 
+(defn find-grid-item [grid-map target-val]
+  (reduce (fn [_acc {:keys [val] :as grid-item}]
+            (when (= val target-val)
+              (reduced grid-item)))
+          nil (grid-map->grid-coll grid-map)))
+
+(defn replace-grid-item [grid-map new-value {:keys [y x] :as _grid-item}]
+  (assoc-in grid-map [y x :val] new-value))
+
 (defn ->int [val]
   (Integer. val))
 
