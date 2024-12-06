@@ -54,12 +54,8 @@
         :else (recur (rest remaining) (inc index))))))
 
 (defn adjust-order [page-rules erroneous-index order]
-  (let [page-number (nth order erroneous-index)
-        page-number-rules (get page-rules page-number)
-        earliest-invalid-index (find-earliest-index-of-error (take erroneous-index order) page-number-rules)]
-    (->> order
-         (utils/drop-nth erroneous-index)
-         (utils/insert-at-index earliest-invalid-index page-number))))
+  (let [earliest-invalid-index (->> erroneous-index (nth order) (get page-rules) (find-earliest-index-of-error order))]
+    (utils/move-item erroneous-index earliest-invalid-index order)))
 
 (defn correct-page-order [page-rules order]
   (loop [current-order order index 0]

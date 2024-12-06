@@ -131,3 +131,9 @@
 (defn insert-at-index [n item coll]
   (let [[start end] (split-at n coll)]
     (concat start [item] end)))
+
+(defn move-item [original-index desired-index collection]
+  (let [item (nth collection original-index)]
+    (->> collection
+         (drop-nth original-index)
+         (insert-at-index desired-index item))))
