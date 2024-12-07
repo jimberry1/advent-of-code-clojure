@@ -68,8 +68,17 @@
 (defn ->int [val]
   (Integer. val))
 
+(defn ->long [val]
+  (Long. val))
+
 (defn drop-nth [n coll]
   (keep-indexed #(when (not= %1 n) %2) coll))
+
+(defn drop-at-index [n coll]
+  (keep-indexed #(when (not= %1 n) %2) coll))
+
+(defn replace-at-index [n replacement coll]
+  (map-indexed #(if (not= %1 n) %2 replacement) coll))
 
 (defn insert-at-index [n item coll]
   (let [[start end] (split-at n coll)]
