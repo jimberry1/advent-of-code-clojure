@@ -10,6 +10,8 @@
    :down-left {:y 1 :x -1}
    :down-right {:y 1 :x 1}})
 
+(defn get-coordinates [grid-item] (select-keys grid-item [:x :y]))
+
 (defn- indexed-grid-coll
   "Takes an input and returns a collection of values in the form
      `{:x X :y Y :val val}`, where x and y are co-ordinates and val is the
@@ -39,8 +41,12 @@
   [indexed-map y x]
   (get-in indexed-map [y x]))
 
-(defn- apply-translation [{item-x :x item-y :y :as _grid-item} {translate-x :x translate-y :y :as _translation}]
-  {:y (+ item-y translate-y) :x (+ item-x translate-x)})
+(defn- apply-translation [grid-item-1 grid-item-2 & {:keys [operation] :or {operation +}}]
+  (merge-with operation (get-coordinates grid-item-1) (get-coordinates grid-item-2)))
+
+(defn apply-translation-get-value [grid-map grid-item translation & {:keys [operation] :as opts}]
+  (let [{next-y :y next-x :x} (apply-translation grid-item translation opts)]
+    (get-indexed-grid-map-val grid-map next-y next-x)))
 
 (defn get-value-in-direction [grid-map direction grid-item]
   (let [translation (get all-directions direction)
@@ -65,3 +71,8 @@
 
 (defn replace-grid-item [grid-map new-value {:keys [y x] :as _grid-item}]
   (assoc-in grid-map [y x :val] new-value))
+
+(defn calc-translation
+  "Calculates the x y vector translation from grid item 1 to grid item 2"
+  [grid-item-1 grid-item-2]
+  (merge-with - (get-coordinates grid-item-2) (get-coordinates grid-item-1)))
