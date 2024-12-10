@@ -61,11 +61,11 @@
       (dissoc file-pos)))
 
 (defn update-space-map [space-map [space-pos space-size] file-pos file-size]
-  (let [new-file-size (- space-size file-size)]
+  (let [new-space-size (- space-size file-size)]
     (cond-> space-map
       :always (update space-size disj space-pos)
       :always (create-or-insert-nested-set file-size file-pos)
-      (not= 0 new-file-size) (create-or-insert-nested-set new-file-size (+ space-pos file-size)))))
+      (> new-space-size 0) (create-or-insert-nested-set new-space-size (+ space-pos file-size)))))
 
 (defn loop-file [initial-file-map initial-space-map]
   (loop [[[file-pos [_file-id file-size :as next-file]] & rem] (reverse initial-file-map) space-map initial-space-map res initial-file-map]
@@ -85,3 +85,12 @@
                               (map #(* % file-id) (range idx (+ idx size))))) +))))
 
 (time (solve-p2 input))
+
+;; The approach for part 2 is as follows:
+;; Grouping all files into a map of their position -> id,size
+;; Grouping all spaces into a map of their size -> position
+;; Loop over files in reverse order, find all spaces large enough to fit
+;; the fit, then take the space with the lowest position value
+;; Update the file map to put moved block in space position and remove old file position
+;; Update the space map to move or remove the occupied space, and add a space of file size at file location
+;; Repeat until all files have been checked
