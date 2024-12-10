@@ -1,6 +1,7 @@
 (ns advent-of-code-clojure.2024.day-8
   (:require [advent-of-code-clojure.utils :as utils]
-            [advent-of-code-clojure.grid-utils :as grid]))
+            [advent-of-code-clojure.grid-utils :as grid]
+            [advent-of-code-clojure.grid-utils-2 :as grid-2]))
 
 (def example-input (utils/load-example-input 2024 8))
 (def input (utils/load-input-file 2024 8))
@@ -35,5 +36,38 @@
                        (into all-antinodes (find-antinodes grid-map nodes-for-val repeat?))) #{})
           count)))
 
-(solve input)
-(solve input :repeat? true)
+(time (solve input))
+(time (solve input :repeat? true))
+
+;; grid utils 2
+(defn grid-2-apply-translation [grid-map start-coords translation repeat?]
+  (loop [antinodes (list) current-coords start-coords]
+    (let [next-coords (grid-2/apply-translation translation current-coords)]
+      (cond
+        (nil? (grid-2/get-item-at-coords grid-map next-coords)) antinodes
+        (not repeat?) (cons next-coords antinodes)
+        :else (recur (cons next-coords antinodes) next-coords)))))
+
+(defn grid-2-calculate-antinodes [grid-map coords-1 coords-2 repeat?]
+  (let [start-nodes (if repeat? [coords-1 coords-2] [])]
+    (-> start-nodes
+        (into (grid-2-apply-translation grid-map coords-1 (grid-2/get-coord->coord-translation coords-2 coords-1) repeat?))
+        (into (grid-2-apply-translation grid-map coords-2 (grid-2/get-coord->coord-translation coords-1 coords-2) repeat?)))))
+
+(defn grid-2-find-antinodes [grid-map coords repeat?]
+  (loop [all-antinodes (list) [next-coords & remaining-coords] coords]
+    (if (nil? remaining-coords)
+      all-antinodes
+      (let [new-antinodes (mapcat (fn [coords] (grid-2-calculate-antinodes grid-map next-coords coords repeat?)) remaining-coords)]
+        (recur (into all-antinodes new-antinodes) remaining-coords)))))
+
+(defn grid-2-solve [input & {:keys [repeat?] :as _opts}]
+  (let [grid-map (grid-2/->grid-map input :xform str)
+        grouped-vals (-> grid-map (grid-2/group-coords-by-item) (dissoc ".") vals)]
+    (->>  grouped-vals
+          (reduce (fn [all-antinodes coords]
+                    (into all-antinodes (grid-2-find-antinodes grid-map coords repeat?))) #{})
+          count)))
+
+(time (grid-2-solve input))
+(time (grid-2-solve input :repeat? true))
