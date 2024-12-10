@@ -34,43 +34,49 @@
 
 (time (solve input))
 
-(defn new-expand-list [idx item]
-  (if (= (rem idx 2) 0)
-    {:index (/ idx 2) :size item}
-    {:index nil :size item}))
+(defn p2-expand [items]
+  (reduce (fn [[file-map space-map current-pos index] next-item]
+            (if (= (rem index 2) 0)
+              (let [updated-file-map (assoc file-map current-pos [(/ index 2) next-item])]
+                [updated-file-map space-map (+ current-pos next-item) (inc index)])
+              (let [updated-space-map (assoc space-map current-pos next-item)]
+                [file-map updated-space-map (+ current-pos next-item) (inc index)])))
+          [(sorted-map) (sorted-map) 0 0] items))
 
-(defn update-space [space-index {:keys [size] :as replacement-item} vector]
-  (let [updated-space (-> vector (get space-index) (update :size - size))
-        item-idx (.indexOf vector replacement-item)
-        updated-vector (assoc-in vector [item-idx :index] nil)]
-    (vec (concat (subvec updated-vector 0 space-index)
-                 [replacement-item updated-space]
-                 (subvec updated-vector (inc space-index))))))
+(defn find-space [space-map file-size file-pos]
+  (reduce (fn [_acc [space-pos space-size :as space]]
+            (cond
+              (> space-pos file-pos) (reduced nil)
+              (<= file-size space-size) (reduced space)
+              :else nil)) nil space-map))
 
-(defn find-gap-and-replace [order {target-index :index required-size :size :as item}]
-  (loop [[{:keys [index size]} & rem-order] order idx 0]
-    (cond
-      (and (nil? index) (<= required-size size)) (update-space idx item order)
-      (= target-index index) order
-      :else (recur rem-order (inc idx)))))
+(defn update-file-map [file-map space-pos file-pos file]
+  (-> file-map
+      (assoc space-pos file)
+      (dissoc file-pos)))
 
-(defn reduce-p2 [vals]
-  (reduce (fn [updated-order {:keys [index] :as item}]
-            (if (nil? index)
-              updated-order
-              (find-gap-and-replace updated-order item))) vals (reverse vals)))
+(defn update-space-map [space-map [space-pos space-size] file-pos file-size]
+  (cond-> space-map
+    :always (dissoc space-pos)
+    :always (assoc file-pos file-size)
+    (< file-size space-size) (assoc (+ space-pos file-size) (- space-size file-size))))
 
-(defn solve-p2 [input]
-  (->> input
-       prepare-input
-       (map-indexed new-expand-list)
-       (into [])
-       reduce-p2
-       (remove #(= 0 (:size %)))
-       (mapcat (fn [{:keys [index size]}]
-                 (take size (repeat index))))
-       (map-indexed (fn [idx val] (when val (* val idx))))
-       (remove nil?)
-       (reduce +)))
+(defn loop-file [initial-file-map initial-space-map]
+  (loop [[[file-pos [_file-id file-size :as next-file]] & rem] (reverse initial-file-map) space-map initial-space-map res initial-file-map]
+    (if (nil? next-file)
+      res
+      (let [[space-pos :as space] (find-space space-map file-size file-pos)]
+        (if (nil? space-pos)
+          (recur rem space-map res)
+          (let [updated-res (update-file-map res space-pos file-pos next-file)
+                updated-space-map (update-space-map space-map space file-pos file-size)]
+            (recur rem updated-space-map updated-res)))))))
 
-(time (solve-p2 input))
+(defn solve-better [input]
+  (let [[initial-file-map initial-space-map] (->> input prepare-input p2-expand)
+        condensed-file (loop-file initial-file-map initial-space-map)]
+    (->> condensed-file
+         (transduce (mapcat (fn [[idx [file-id size]]]
+                              (map #(* % file-id) (range idx (+ idx size))))) +))))
+
+(time (solve-better input))
