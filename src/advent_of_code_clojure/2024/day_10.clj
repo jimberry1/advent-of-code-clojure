@@ -32,9 +32,7 @@
   (let [grid-map (-> puzzle-input prepare-input (grid-2/->grid-map :xform utils/->int))
         trail-pos->coords-set (update-vals (grid-2/group-coords-by-item grid-map) set)
         start-coords (get trail-pos->coords-set 0)]
-    (->> start-coords
-         (map #(walk-path trail-pos->coords-set % only-distinct-paths?))
-         (reduce +))))
+    (transduce (map #(walk-path trail-pos->coords-set % only-distinct-paths?)) + start-coords)))
 
-(solve input)
-(solve input :only-distinct-paths? false)
+(time (solve input))
+(time (solve input :only-distinct-paths? false))
