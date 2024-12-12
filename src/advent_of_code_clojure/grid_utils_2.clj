@@ -27,6 +27,9 @@
 (defn apply-translation [translation coords]
   (mapv + coords translation))
 
+(defn apply-translations [translations coords]
+  (map #(mapv + % coords) translations))
+
 (defn get-coord->coord-translation
   "Calculates the x y coordinates translation from coordinates 1 to coordinates 2"
   [coords-1 coords-2]
